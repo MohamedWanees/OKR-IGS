@@ -1,6 +1,18 @@
+
 import React, { useState, useEffect } from 'react';
 import { Plus, Target, TrendingUp, Calendar, Users, Edit3, Trash2, Save, X, Award, BarChart3, LogOut, User, Lock } from 'lucide-react';
 
+// ضيف السطور دي
+import { db } from './firebase';
+import { 
+  collection, 
+  addDoc, 
+  getDocs, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  onSnapshot 
+} from 'firebase/firestore';
 const OKRIGS = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState('');
@@ -11,38 +23,56 @@ const OKRIGS = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedQuarter, setSelectedQuarter] = useState('Q1 2025');
 
-  // Initialize with sample data
-  useEffect(() => {
-    const sampleOkrs = [
-      {
-        id: 1,
-        objective: "زيادة رضا العملاء وتحسين جودة الخدمة",
-        quarter: "Q1 2025",
-        owner: "فريق خدمة العملاء",
-        status: "في التقدم",
-        progress: 75,
-        keyResults: [
-          { id: 1, description: "تحقيق معدل رضا عملاء 95%", target: 95, current: 88, unit: "%" },
-          { id: 2, description: "تقليل وقت الاستجابة إلى 2 ساعة", target: 2, current: 3.2, unit: "ساعة" },
-          { id: 3, description: "زيادة عدد المراجعات الإيجابية بنسبة 50%", target: 150, current: 120, unit: "مراجعة" }
-        ]
-      },
-      {
-        id: 2,
-        objective: "تطوير المنتجات وزيادة الإيرادات",
-        quarter: "Q1 2025",
-        owner: "فريق التطوير",
-        status: "في التقدم",
-        progress: 60,
-        keyResults: [
-          { id: 1, description: "إطلاق 3 ميزات جديدة", target: 3, current: 2, unit: "ميزة" },
-          { id: 2, description: "زيادة الإيرادات بنسبة 25%", target: 25, current: 18, unit: "%" },
-          { id: 3, description: "تحسين سرعة التطبيق بنسبة 40%", target: 40, current: 25, unit: "%" }
-        ]
+// Load data from Firebase
+useEffect(() => {
+  if (isLoggedIn) {
+    const unsubscribe = onSnapshot(collection(db, 'okrs'), (snapshot) => {
+      const okrsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      // لو مفيش بيانات، حط البيانات التجريبية
+      if (okrsData.length === 0) {
+        const sampleOkrs = [
+          {
+            objective: "زيادة رضا العملاء وتحسين جودة الخدمة",
+            quarter: "Q1 2025",
+            owner: "فريق خدمة العملاء",
+            status: "في التقدم",
+            progress: 75,
+            keyResults: [
+              { id: 1, description: "تحقيق معدل رضا عملاء 95%", target: 95, current: 88, unit: "%" },
+              { id: 2, description: "تقليل وقت الاستجابة إلى 2 ساعة", target: 2, current: 3.2, unit: "ساعة" },
+              { id: 3, description: "زيادة عدد المراجعات الإيجابية بنسبة 50%", target: 150, current: 120, unit: "مراجعة" }
+            ]
+          },
+          {
+            objective: "تطوير المنتجات وزيادة الإيرادات",
+            quarter: "Q1 2025",
+            owner: "فريق التطوير",
+            status: "في التقدم",
+            progress: 60,
+            keyResults: [
+              { id: 1, description: "إطلاق 3 ميزات جديدة", target: 3, current: 2, unit: "ميزة" },
+              { id: 2, description: "زيادة الإيرادات بنسبة 25%", target: 25, current: 18, unit: "%" },
+              { id: 3, description: "تحسين سرعة التطبيق بنسبة 40%", target: 40, current: 25, unit: "%" }
+            ]
+          }
+        ];
+        
+        // حفظ البيانات التجريبية في Firebase
+        sampleOkrs.forEach(okr => {
+          addDoc(collection(db, 'okrs'), okr);
+        });
+      } else {
+        setOkrs(okrsData);
       }
-    ];
-    setOkrs(sampleOkrs);
-  }, []);
+    });
+
+    return () => unsubscribe();
+  }
+}, [isLoggedIn]);
 
   const [formData, setFormData] = useState({
     objective: '',
@@ -164,33 +194,39 @@ const OKRIGS = () => {
     });
   };
 
-  const handleSubmit = () => {
-    // Validation
-    if (!formData.objective || !formData.owner || formData.keyResults.some(kr => !kr.description || !kr.target)) {
-      alert('يرجى ملء جميع الحقول المطلوبة');
-      return;
-    }
-    const newOkr = {
-      id: editingOkr ? editingOkr.id : Date.now(),
-      ...formData,
-      status: editingOkr ? editingOkr.status : "جديد",
-      progress: editingOkr ? editingOkr.progress : 0,
-      keyResults: formData.keyResults.map((kr, index) => ({
-        id: index + 1,
-        ...kr,
-        current: editingOkr ? editingOkr.keyResults[index]?.current || 0 : 0,
-        target: parseFloat(kr.target)
-      }))
-    };
+  const handleSubmit = async () => {
+  // Validation
+  if (!formData.objective || !formData.owner || formData.keyResults.some(kr => !kr.description || !kr.target)) {
+    alert('يرجى ملء جميع الحقول المطلوبة');
+    return;
+  }
 
-    if (editingOkr) {
-      setOkrs(okrs.map(okr => okr.id === editingOkr.id ? newOkr : okr));
-    } else {
-      setOkrs([...okrs, newOkr]);
-    }
-
-    resetForm();
+  const newOkr = {
+    ...formData,
+    status: editingOkr ? editingOkr.status : "جديد",
+    progress: editingOkr ? editingOkr.progress : 0,
+    keyResults: formData.keyResults.map((kr, index) => ({
+      id: index + 1,
+      ...kr,
+      current: editingOkr ? editingOkr.keyResults[index]?.current || 0 : 0,
+      target: parseFloat(kr.target)
+    }))
   };
+
+  try {
+    if (editingOkr) {
+      // تحديث OKR موجود
+      await updateDoc(doc(db, 'okrs', editingOkr.id), newOkr);
+    } else {
+      // إضافة OKR جديد
+      await addDoc(collection(db, 'okrs'), newOkr);
+    }
+    resetForm();
+  } catch (error) {
+    console.error('Error saving OKR:', error);
+    alert('حدث خطأ في حفظ البيانات');
+  }
+};
 
   const resetForm = () => {
     setFormData({
@@ -218,35 +254,45 @@ const OKRIGS = () => {
     setShowForm(true);
   };
 
-  const deleteOkr = (id) => {
-    setOkrs(okrs.filter(okr => okr.id !== id));
-  };
+  const deleteOkr = async (id) => {
+  if (window.confirm('هل أنت متأكد من حذف هذا الهدف؟')) {
+    try {
+      await deleteDoc(doc(db, 'okrs', id));
+    } catch (error) {
+      console.error('Error deleting OKR:', error);
+      alert('حدث خطأ في حذف الهدف');
+    }
+  }
+};
 
-  const updateProgress = (okrId, krId, value) => {
-    setOkrs(okrs.map(okr => {
-      if (okr.id === okrId) {
-        const updatedKeyResults = okr.keyResults.map(kr =>
-          kr.id === krId ? { ...kr, current: parseFloat(value) || 0 } : kr
-        );
-        
-        // Calculate overall progress
-        const totalProgress = updatedKeyResults.reduce((sum, kr) => {
-          const progress = Math.min((kr.current / kr.target) * 100, 100);
-          return sum + progress;
-        }, 0);
-        const overallProgress = Math.round(totalProgress / updatedKeyResults.length);
+  const updateProgress = async (okrId, krId, value) => {
+  try {
+    const okr = okrs.find(o => o.id === okrId);
+    if (!okr) return;
 
-        return {
-          ...okr,
-          keyResults: updatedKeyResults,
-          progress: overallProgress,
-          status: overallProgress === 100 ? "مكتمل" : overallProgress > 0 ? "في التقدم" : "جديد"
-        };
-      }
-      return okr;
-    }));
-  };
+    const updatedKeyResults = okr.keyResults.map(kr =>
+      kr.id === krId ? { ...kr, current: parseFloat(value) || 0 } : kr
+    );
+ // Calculate overall progress
+    const totalProgress = updatedKeyResults.reduce((sum, kr) => {
+      const progress = Math.min((kr.current / kr.target) * 100, 100);
+      return sum + progress;
+    }, 0);
+    const overallProgress = Math.round(totalProgress / updatedKeyResults.length);
 
+    const updatedOkr = {
+      ...okr,
+      keyResults: updatedKeyResults,
+      progress: overallProgress,
+      status: overallProgress === 100 ? "مكتمل" : overallProgress > 0 ? "في التقدم" : "جديد"
+    };
+
+    await updateDoc(doc(db, 'okrs', okrId), updatedOkr);
+  } catch (error) {
+    console.error('Error updating progress:', error);
+    alert('حدث خطأ في تحديث التقدم');
+  }
+};
   const getStatusColor = (status) => {
     switch (status) {
       case 'مكتمل': return 'bg-green-100 text-green-800';
