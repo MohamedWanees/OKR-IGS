@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Target, TrendingUp, Calendar, Users, Edit3, Trash2, Save, X, Award, BarChart3, LogOut, User, Lock } from 'lucide-react';
 
-const OKRSystem = () => {
+const OKRIGS = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState('');
   const [loginData, setLoginData] = useState({ username: '', password: '' });
