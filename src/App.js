@@ -620,5 +620,5 @@ const OKRSystem = () => {
   );
 };
 
-export default OKRSystem;
-export default OKRSystem;
+export default OKRIGS;
+
