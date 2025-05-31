@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+
 import React, { useState, useEffect } from 'react';
 import { Plus, Target, TrendingUp, Calendar, Users, Edit3, Trash2, Save, X, Award, BarChart3, LogOut, User, Lock, Home, FileText, Settings, PieChart, Menu } from 'lucide-react';
 
