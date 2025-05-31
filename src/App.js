@@ -7,7 +7,6 @@ import { db } from './firebase';
 import { 
   collection, 
   addDoc, 
-  getDocs, 
   updateDoc, 
   deleteDoc, 
   doc, 
@@ -20,7 +19,6 @@ const OKRIGS = () => {
   const [okrs, setOkrs] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingOkr, setEditingOkr] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview');
   const [selectedQuarter, setSelectedQuarter] = useState('Q1 2025');
 
 // Load data from Firebase
