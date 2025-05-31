@@ -19,7 +19,7 @@ const OKRIGS = () => {
   const [okrs, setOkrs] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingOkr, setEditingOkr] = useState(null);
-  const [selectedQuarter, setSelectedQuarter] = useState('Q1 2025');
+  const [selectedQuarter, setSelectedQuarter] = useState('السنة كاملة');
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -92,7 +92,7 @@ const OKRIGS = () => {
     keyResults: [{ description: '', target: '', unit: '' }]
   });
 
-  const quarters = ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025'];
+const quarters = ['السنة كاملة', 'Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025'];
 
   // Sample users for demo
   const users = [
@@ -270,7 +270,9 @@ const OKRIGS = () => {
     return 'bg-red-500';
   };
 
-  const filteredOkrs = okrs.filter(okr => okr.quarter === selectedQuarter);
+ const filteredOkrs = selectedQuarter === 'السنة كاملة' 
+  ? okrs 
+  : okrs.filter(okr => okr.quarter === selectedQuarter);
 
   const overallStats = {
     totalOkrs: filteredOkrs.length,
@@ -280,6 +282,13 @@ const OKRIGS = () => {
       ? Math.round(filteredOkrs.reduce((sum, okr) => sum + okr.progress, 0) / filteredOkrs.length)
       : 0
   };
+  // إضافة إحصائيات جديدة للسنة
+  quarterlyBreakdown: selectedQuarter === 'السنة كاملة' ? {
+    Q1: okrs.filter(okr => okr.quarter === 'Q1 2025'),
+    Q2: okrs.filter(okr => okr.quarter === 'Q2 2025'),
+    Q3: okrs.filter(okr => okr.quarter === 'Q3 2025'),
+    Q4: okrs.filter(okr => okr.quarter === 'Q4 2025')
+  } : null
 
   // Login Screen
   if (!isLoggedIn) {
@@ -748,9 +757,49 @@ const OKRIGS = () => {
                       key={quarter}
                       onClick={() => setSelectedQuarter(quarter)}
                       className={`px-3 py-1 rounded-lg text-sm font-medium ${
-                        selectedQuarter === quarter
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        {selectedQuarter === 'السنة كاملة' && (
+  <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <h3 className="text-lg font-bold text-gray-900 mb-4">إحصائيات الأرباع</h3>
+    <div className="grid grid-cols-4 gap-4">
+      {Object.entries(overallStats.quarterlyBreakdown).map(([quarter, quarterOkrs]) => {
+        const quarterProgress = quarterOkrs.length > 0 
+          ? Math.round(quarterOkrs.reduce((sum, okr) => sum + okr.progress, 0) / quarterOkrs.length)
+          : 0;
+        const completed = quarterOkrs.filter(okr => okr.status === 'مكتمل').length;
+        
+        return (
+          <div key={quarter} className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-900 mb-2">{quarter}</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>الأهداف:</span>
+                <span className="font-medium">{quarterOkrs.length}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>مكتمل:</span>
+                <span className="font-medium text-green-600">{completed}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>التقدم:</span>
+                <span className="font-medium">{quarterProgress}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <div 
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    quarterProgress >= 80 ? 'bg-green-500' : 
+                    quarterProgress >= 50 ? 'bg-blue-500' : 
+                    quarterProgress >= 25 ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}
+                  style={{ width: `${quarterProgress}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
                       }`}
                     >
                       {quarter}
