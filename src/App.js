@@ -23,6 +23,14 @@ const OKRIGS = () => {
 
 // Load data from Firebase
 useEffect(() => {
+  //stay in 
+  const savedUser = localStorage.getItem('currentUser');
+  const savedLoginStatus = localStorage.getItem('isLoggedIn');
+  
+  if (savedUser && savedLoginStatus === 'true') {
+    setIsLoggedIn(true);
+    setCurrentUser(savedUser);
+  } // stay in
   if (isLoggedIn) {
     const unsubscribe = onSnapshot(collection(db, 'okrs'), (snapshot) => {
       const okrsData = snapshot.docs.map(doc => ({
@@ -93,6 +101,9 @@ useEffect(() => {
     if (user) {
       setIsLoggedIn(true);
       setCurrentUser(user.name);
+      // Save to localStorage
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('currentUser', user.name);
       setLoginData({ username: '', password: '' });
     } else {
       alert('اسم المستخدم أو كلمة المرور غير صحيحة');
@@ -169,6 +180,9 @@ useEffect(() => {
     setIsLoggedIn(false);
     setCurrentUser('');
     setLoginData({ username: '', password: '' });
+    // Clear localStorage
+  localStorage.removeItem('isLoggedIn');
+  localStorage.removeItem('currentUser');
   };
 
   const addKeyResult = () => {
