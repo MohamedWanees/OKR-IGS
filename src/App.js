@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Target, TrendingUp, Calendar, Users, Edit3, Trash2, Save, X, Award, BarChart3, LogOut, User, Lock } from 'lucide-react';
 
-const OKRSystem = () => {
 const OKRIGS = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState('');
@@ -229,7 +228,7 @@ const OKRIGS = () => {
         const updatedKeyResults = okr.keyResults.map(kr =>
           kr.id === krId ? { ...kr, current: parseFloat(value) || 0 } : kr
         );
-
+        
         // Calculate overall progress
         const totalProgress = updatedKeyResults.reduce((sum, kr) => {
           const progress = Math.min((kr.current / kr.target) * 100, 100);
@@ -335,7 +334,7 @@ const OKRIGS = () => {
               </div>
             </div>
           </div>
-
+          
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <div className="flex items-center gap-3">
               <Award className="h-8 w-8 text-green-600" />
@@ -345,7 +344,7 @@ const OKRIGS = () => {
               </div>
             </div>
           </div>
-
+          
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <div className="flex items-center gap-3">
               <TrendingUp className="h-8 w-8 text-yellow-600" />
@@ -355,7 +354,7 @@ const OKRIGS = () => {
               </div>
             </div>
           </div>
-
+          
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <div className="flex items-center gap-3">
               <BarChart3 className="h-8 w-8 text-purple-600" />
@@ -455,7 +454,7 @@ const OKRIGS = () => {
                           </button>
                         )}
                       </div>
-
+                      
                       <textarea
                         value={kr.description}
                         onChange={(e) => updateKeyResult(index, 'description', e.target.value)}
@@ -464,7 +463,7 @@ const OKRIGS = () => {
                         rows="2"
                         required
                       />
-
+                      
                       <div className="grid grid-cols-2 gap-2">
                         <input
                           type="number"
@@ -544,7 +543,7 @@ const OKRIGS = () => {
                         {okr.status}
                       </span>
                     </div>
-
+                    
                     {/* Progress Bar */}
                     <div className="flex items-center gap-3 mb-4">
                       <div className="flex-1 bg-gray-200 rounded-full h-2">
@@ -556,7 +555,7 @@ const OKRIGS = () => {
                       <span className="text-sm font-medium text-gray-600">{okr.progress}%</span>
                     </div>
                   </div>
-
+                  
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => editOkr(okr)}
@@ -586,7 +585,7 @@ const OKRIGS = () => {
                             {kr.current} / {kr.target} {kr.unit}
                           </span>
                         </div>
-
+                        
                         <div className="flex items-center gap-3">
                           <div className="flex-1 bg-gray-200 rounded-full h-1.5">
                             <div
@@ -611,7 +610,7 @@ const OKRIGS = () => {
                       </div>
                     );
                   })}
-                </div>More actions
+                </div>
               </div>
             ))
           )}
